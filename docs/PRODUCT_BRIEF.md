@@ -6,10 +6,12 @@ Build a local Windows executable that shows a Tekken 8 style combo overlay while
 
 - Desktop app packaged with Electron.
 - Transparent always-on-top overlay window.
+- Display-only overlay that always lets mouse clicks pass through; interaction stays in the editor so the full-screen transparent window cannot block desktop input.
 - Editor window for typing combo notation and inserting inputs from palettes.
 - T8-style CSS-rendered direction arrows, attack buttons, separators, and property chips.
 - Regular movement and HOLD movement palettes visible at the same time.
 - Property tokens for Tornado, Heat Burst, Heat Dash, Heat Engager, Wall Break, Wall Blast, Floor Break, Balcony Break, Dash, and Sprint.
+- Temporary punish, matchup tip, and throw break HUD cues, driven by validated assistant events and a developer simulation panel. See [Training Assistant Foundation](./ASSISTANT.md).
 
 ## Overlay Limitation
 

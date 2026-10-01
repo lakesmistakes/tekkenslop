@@ -1,8 +1,15 @@
 const { app, BrowserWindow, globalShortcut, ipcMain, screen } = require("electron");
 const path = require("path");
+const { registerAssistantIpc } = require("./assistant-ipc.cjs");
 
 let controlWindow;
 let overlayWindow;
+
+registerAssistantIpc({
+  ipcMain,
+  getControlWindow: () => controlWindow,
+  getOverlayWindow: () => overlayWindow,
+});
 
 const overlayState = {
   notation:
@@ -65,7 +72,8 @@ function createOverlayWindow() {
     },
   });
 
-  overlayWindow.setIgnoreMouseEvents(overlayState.clickThrough, { forward: true });
+  // This display-only window covers the screen and must never capture clicks.
+  overlayWindow.setIgnoreMouseEvents(true, { forward: true });
   overlayWindow.setAlwaysOnTop(overlayState.alwaysOnTop, "screen-saver");
   overlayWindow.loadFile(path.join(__dirname, "..", "index.html"), {
     query: { window: "overlay" },
@@ -78,7 +86,7 @@ function createOverlayWindow() {
 
 function applyOverlayWindowState() {
   if (!overlayWindow || overlayWindow.isDestroyed()) return;
-  overlayWindow.setIgnoreMouseEvents(overlayState.clickThrough, { forward: true });
+  overlayWindow.setIgnoreMouseEvents(true, { forward: true });
   overlayWindow.setAlwaysOnTop(overlayState.alwaysOnTop, "screen-saver");
   if (overlayState.overlayVisible) overlayWindow.showInactive();
   else overlayWindow.hide();
@@ -120,7 +128,7 @@ app.on("window-all-closed", () => {
 ipcMain.handle("state:get", () => overlayState);
 
 ipcMain.on("state:set", (_event, patch) => {
-  Object.assign(overlayState, patch);
+  Object.assign(overlayState, patch, { clickThrough: true });
   applyOverlayWindowState();
   broadcastState();
 });

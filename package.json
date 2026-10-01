@@ -5,6 +5,7 @@
   "main": "src/main.cjs",
   "scripts": {
     "start": "electron .",
+    "test": "node --test test/*.test.cjs",
     "build": "electron-builder --win portable",
     "build:installer": "electron-builder --win nsis"
   },

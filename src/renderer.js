@@ -1,5 +1,8 @@
+import { AssistantHud, assistantDemos } from "./assistant-hud.js";
+
 const params = new URLSearchParams(window.location.search);
 const mode = params.get("window") === "overlay" ? "overlay" : "control";
+const assistantHud = mode === "overlay" ? new AssistantHud() : null;
 
 const directions = {
   ub: "↖",
@@ -238,6 +241,15 @@ function renderControl(state) {
           </div>
           <div class="overlay-preview">${renderNotation(state.notation)}</div>
         </div>
+
+        <section class="assistant-test-panel" aria-labelledby="assistant-test-title">
+          <h2 id="assistant-test-title">Developer assistant test</h2>
+          <p class="pane-note">Simulate a training cue on the overlay. Each lasts 4 seconds; a new cue replaces the previous one.</p>
+          <div class="assistant-test-buttons">
+            ${assistantDemos.map((demo, index) => `<button data-assistant-demo="${index}">${escapeHtml(demo.label)}</button>`).join("")}
+          </div>
+          <p id="assistant-test-status" class="pane-note" role="status"></p>
+        </section>
       </section>
 
       <aside class="palette-pane">
@@ -312,10 +324,7 @@ function renderControl(state) {
               .map((position) => `<button class="${state.position === position ? "active" : ""}" data-position="${position}">${position}</button>`)
               .join("")}
           </div>
-          <label class="check-row">
-            <input id="clickThrough" type="checkbox" ${state.clickThrough ? "checked" : ""}>
-            Click-through overlay
-          </label>
+          <p class="pane-note">The overlay always lets mouse clicks pass through. Use this editor to change it.</p>
           <label class="check-row">
             <input id="overlayVisible" type="checkbox" ${state.overlayVisible ? "checked" : ""}>
             Show overlay
@@ -340,12 +349,28 @@ function renderOverlay(state) {
     <main class="overlay-stage overlay-${state.position}" style="--overlay-opacity:${state.opacity / 100}; --overlay-scale:${state.scale / 100}">
       <section class="game-overlay">
         ${renderNotation(state.notation)}
+        <div id="assistant-hud" class="assistant-hud" role="status" aria-live="polite" aria-atomic="true" hidden></div>
       </section>
     </main>
   `;
+  assistantHud.render();
 }
 
 function bindControlEvents() {
+  document.querySelectorAll("[data-assistant-demo]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const status = document.getElementById("assistant-test-status");
+      try {
+        const result = await window.comboOverlay.sendAssistantEvent(assistantDemos[Number(button.dataset.assistantDemo)].event);
+        status.textContent = result.ok
+          ? (document.getElementById("overlayVisible").checked ? "Cue sent to overlay." : "Cue sent. Show the overlay to see it before it expires.")
+          : result.error;
+      } catch {
+        status.textContent = "Could not send the assistant cue.";
+      }
+    });
+  });
+
   const notation = document.getElementById("notation");
   notation.addEventListener("input", () => setState({ notation: notation.value }));
 
@@ -365,7 +390,6 @@ function bindControlEvents() {
   document.querySelector("[data-quit]").addEventListener("click", () => window.comboOverlay.quit());
   document.getElementById("opacity").addEventListener("input", (event) => setState({ opacity: Number(event.target.value) }));
   document.getElementById("scale").addEventListener("input", (event) => setState({ scale: Number(event.target.value) }));
-  document.getElementById("clickThrough").addEventListener("change", (event) => setState({ clickThrough: event.target.checked }));
   document.getElementById("overlayVisible").addEventListener("change", (event) => setState({ overlayVisible: event.target.checked }));
   document.getElementById("alwaysOnTop").addEventListener("change", (event) => setState({ alwaysOnTop: event.target.checked }));
   document.querySelectorAll("[data-position]").forEach((button) => {
@@ -391,6 +415,11 @@ window.comboOverlay.onState((state) => {
   if (mode === "overlay") renderOverlay(state);
   else renderControl(state);
 });
+
+if (assistantHud) {
+  const unsubscribe = window.comboOverlay.onAssistantEvent((event) => assistantHud.show(event));
+  window.addEventListener("beforeunload", () => unsubscribe(), { once: true });
+}
 
 window.comboOverlay.getState().then((state) => {
   if (mode === "overlay") renderOverlay(state);

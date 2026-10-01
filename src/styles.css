@@ -189,6 +189,71 @@ textarea:focus {
   background-size: 28px 28px;
 }
 
+.assistant-test-panel {
+  border-top: 1px solid #202c41;
+  padding-top: 16px;
+}
+
+.assistant-test-buttons {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.assistant-test-buttons button {
+  min-height: 42px;
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.assistant-test-buttons button:focus-visible {
+  outline: 2px solid #a6b2ff;
+  outline-offset: 2px;
+}
+
+.assistant-hud {
+  --assistant-accent: #ffbd69;
+  width: fit-content;
+  max-width: min(600px, 100%);
+  margin: 18px auto 0;
+  border-left: 4px solid var(--assistant-accent);
+  background: rgba(10, 15, 24, 0.94);
+  padding: 14px 22px;
+  overflow-wrap: anywhere;
+  text-align: left;
+  pointer-events: none;
+}
+
+.assistant-hud[data-type="matchup_tip"] {
+  --assistant-accent: #9eb3ff;
+}
+
+.assistant-hud[data-type="throw_break"] {
+  --assistant-accent: #81e6b4;
+}
+
+.assistant-label {
+  margin-bottom: 6px;
+  color: var(--assistant-accent);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.assistant-context {
+  color: #cbd5e5;
+  font-size: 16px;
+}
+
+.assistant-action {
+  display: block;
+  margin-top: 4px;
+  color: #ffffff;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
 .numpad-grid,
 .button-grid,
 .property-grid {
