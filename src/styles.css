@@ -1,0 +1,365 @@
+:root {
+  color-scheme: dark;
+  font-family:
+    "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont,
+    sans-serif;
+  color: #f4f7fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.overlay-root,
+.overlay-root body {
+  background: transparent !important;
+}
+
+button,
+textarea,
+input {
+  font: inherit;
+}
+
+button {
+  border: 1px solid #344158;
+  background: #121a28;
+  color: #f7f9fd;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: #7e8fff;
+  background: #1a2638;
+}
+
+.control-body {
+  background:
+    linear-gradient(140deg, rgba(36, 52, 78, 0.3), transparent 34%),
+    #0c111b;
+}
+
+.control-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 18px;
+  min-height: 100vh;
+  padding: 18px;
+}
+
+.editor-pane,
+.palette-pane {
+  border: 1px solid #202c41;
+  background: rgba(13, 19, 30, 0.94);
+}
+
+.editor-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+}
+
+.palette-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  overflow-y: auto;
+  padding: 18px;
+}
+
+.app-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.mark {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border: 1px solid #2f85ff;
+  background: linear-gradient(135deg, #074bd8, #00b3ff);
+  color: white;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+h2 {
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+.app-title p,
+.pane-note {
+  color: #a8b4c8;
+  font-size: 13px;
+}
+
+.field-label {
+  color: #dfe7f5;
+  font-weight: 700;
+}
+
+textarea {
+  width: 100%;
+  min-height: 170px;
+  resize: vertical;
+  border: 1px solid #2a3850;
+  background: #101827;
+  color: #f9fbff;
+  padding: 14px;
+  outline: none;
+  line-height: 1.55;
+}
+
+textarea:focus {
+  border-color: #7688ff;
+  box-shadow: 0 0 0 3px rgba(118, 136, 255, 0.18);
+}
+
+.toolbar,
+.segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.toolbar button,
+.segmented button {
+  min-height: 38px;
+  padding: 0 14px;
+}
+
+.segmented button {
+  flex: 1;
+  text-transform: capitalize;
+}
+
+.segmented .active {
+  border-color: #937bff;
+  background: #392f76;
+}
+
+.preview-card {
+  display: flex;
+  flex: 1;
+  min-height: 240px;
+  flex-direction: column;
+  border: 1px solid #202c41;
+  background: #0a0f18;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #202c41;
+  color: #a8b4c8;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+.overlay-preview {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  overflow: auto;
+  padding: 22px;
+  background:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.035) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.035) 25%, transparent 25%),
+    #050810;
+  background-size: 28px 28px;
+}
+
+.numpad-grid,
+.button-grid,
+.property-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.numpad-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.hold-grid {
+  margin-top: 8px;
+}
+
+.button-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.property-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.palette-button {
+  display: grid;
+  min-height: 46px;
+  place-items: center;
+  padding: 8px 10px;
+}
+
+.button-token {
+  min-height: 58px;
+}
+
+.setting-row {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  color: #dfe7f5;
+  font-size: 13px;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  color: #dfe7f5;
+  font-size: 13px;
+}
+
+.overlay-body {
+  overflow: hidden;
+  background: transparent;
+}
+
+.overlay-stage {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  padding: 28px;
+  pointer-events: none;
+}
+
+.overlay-top {
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.overlay-center {
+  align-items: center;
+  justify-content: center;
+}
+
+.overlay-bottom {
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.game-overlay {
+  max-width: min(1680px, calc(100vw - 56px));
+  opacity: var(--overlay-opacity, 0.92);
+  transform: scale(var(--overlay-scale, 1));
+  transform-origin: center;
+}
+
+.combo-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2px 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.input-chip,
+.word-chip,
+.property-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--icon, 56px);
+  gap: 1px;
+  white-space: nowrap;
+  border: 0;
+  background: transparent;
+  color: #f8f8f8;
+  padding: 0;
+  font-weight: 700;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.8);
+}
+
+.word-chip {
+  min-height: calc(var(--icon, 56px) * 0.78);
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: linear-gradient(to top, #4b434d, #2f3740);
+  padding: 0 calc(var(--icon, 56px) * 0.18);
+  font-family: "Bebas Neue Pro", "Bebas Neue", Impact, "Arial Narrow", sans-serif;
+  font-size: calc(var(--icon, 56px) * 0.46);
+  letter-spacing: 0;
+}
+
+.notation-img {
+  display: block;
+  width: var(--icon, 56px);
+  height: var(--icon, 56px);
+  object-fit: contain;
+  user-select: none;
+}
+
+.sep-img {
+  width: calc(var(--icon, 56px) * 0.72);
+}
+
+.property-chip {
+  min-height: calc(var(--icon, 56px) * 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  padding: 0 calc(var(--icon, 56px) * 0.18);
+  font-family: "Bebas Neue Pro", "Bebas Neue", Impact, "Arial Narrow", sans-serif;
+  font-size: calc(var(--icon, 56px) * 0.42);
+}
+
+.property-chip.heat {
+  background: linear-gradient(to top, #562711, #8c4321);
+  color: #ffe2bd;
+}
+
+.property-chip.break {
+  background: linear-gradient(to top, #222944, #3c4e84);
+  color: #d9e4ff;
+}
+
+.property-chip.dash,
+.property-chip.move,
+.property-chip.sprint {
+  background: linear-gradient(to top, #132a22, #265949);
+  color: #c9ffe7;
+}
+
+.property-icon {
+  color: inherit;
+  font-size: 18px;
+}
+
+@media (max-width: 920px) {
+  .control-shell {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "name": "tekken8-combo-overlay",
+  "version": "0.1.0",
+  "description": "Windows desktop combo editor and transparent Tekken 8 style overlay.",
+  "main": "src/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win portable",
+    "build:installer": "electron-builder --win nsis"
+  },
+  "keywords": [
+    "tekken",
+    "overlay",
+    "combo",
+    "notation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^44.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.local.tekken8combooverlay",
+    "productName": "Tekken 8 Combo Overlay",
+    "files": [
+      "index.html",
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "portable",
+        "nsis"
+      ]
+    },
+    "portable": {
+      "artifactName": "Tekken8ComboOverlay.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

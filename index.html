@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tekken 8 Combo Overlay</title>
+    <script>
+      if (new URLSearchParams(window.location.search).get("window") === "overlay") {
+        document.documentElement.className = "overlay-root";
+      }
+    </script>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="./src/renderer.js"></script>
+  </body>
+</html>

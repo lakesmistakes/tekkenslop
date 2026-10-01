@@ -1,0 +1,316 @@
+/* Rendered-notation styles, shared by the editor and the display page.
+
+   Everything here is class-based and keyed off state classes on <body>, so one
+   stylesheet drives both pages. Keeping it in a single file is what stops the two
+   from drifting — divergent copies of these rules have caused real bugs before.
+
+   Every custom property below is overwritten by T8.applySettings; these are the
+   values a page starts at. `--icon` is deliberately left to the page stylesheet,
+   since the editor preview and the display render at different scales. */
+
+@font-face {
+  font-family: "Bebas Neue Pro";
+  src: url("../font/bebas-neue-pro-bold.ttf") format("truetype");
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --icon: clamp(38px, 6.5vw, 88px);
+
+  /* how far the rectangle sits beyond the notation: top / right / bottom / left */
+  --bt: 24px;
+  --br: 24px;
+  --bb: 24px;
+  --bl: 24px;
+  --sw: 100%;                             /* rectangle width */
+  --ow: 1px;
+  --plate-bg: linear-gradient(to top, #3d293d, #15232f);
+  --plate-opacity: 1;
+  --outline-color: #800534;
+
+  --text-size: calc(var(--icon) * 0.82);
+  --title-size: calc(var(--icon) * 0.82);
+  --damage-size: calc(var(--icon) * 0.82);
+  --head-gap: calc(var(--icon) * 0.16);
+  --text-color: #ffffff;
+  --title-color: #ffffff;
+  --damage-color: #ffffff;
+  --align: flex-start;
+  --title-align: left;
+  --damage-align: right;
+
+  --note-gap: calc(var(--icon) * 1.05);   /* clearance for the note bubble */
+  --note-gap-y: calc(var(--icon) * 0.16); /* the note's own spacing setting */
+  --note-bg: #800534;
+  --note-opacity: 1;
+  --note-color: #ffffff;
+  --note-size: calc(var(--icon) * 0.82);
+
+  --badge-bg: linear-gradient(to top, #483b4c, #2a3945);
+  --badge-color: #ffffff;
+  --badge-size: calc(var(--icon) * 0.82);
+  --badge-opacity: 1;
+
+  --sh-x: 0px;
+  --sh-y: calc(var(--icon) * 0.16);
+  --sh-blur: calc(var(--icon) * 0.34);
+  --sh-color: rgba(0, 0, 0, 0.5);
+}
+
+/* ---------- block ---------- */
+
+/* Plate and notes stack, and the notes hang off the bottom-right corner. The
+   block must shrink-wrap the plate rather than fill the row: the note is aligned
+   to the block's right edge, so a full-width block would leave it floating out
+   past the rectangle whenever the width setting is narrower than the container. */
+.block {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.plate {
+  position: relative;
+  max-width: 100%;
+  display: flex;
+  align-items: stretch;
+  /* a flex item establishes its own formatting context, so the child margins
+     below size this box instead of collapsing out of it */
+}
+
+.plate-body { flex: 1 1 auto; min-width: 0; position: relative; z-index: 1; }
+
+/* Width sizes the rectangle whenever there is one to size, scrolling or not.
+   Scrolling also needs it even with no background, to have something to clip against. */
+body.plated .plate,
+body.scrolling .plate { width: var(--sw); max-width: 100%; }
+
+/* The shadow sits on the boxes themselves, not on the fill layer, so the fill's
+   own opacity control doesn't fade it too. Only meaningful with a rectangle to
+   cast it, hence the `plated` gate. Switched off by an alpha of 0. */
+body.plated .plate,
+body.plated .notes { box-shadow: var(--sh-x) var(--sh-y) var(--sh-blur) var(--sh-color); }
+
+/* Fill and outline both live on this layer so the opacity control fades them
+   together, without taking the notation drawn on top of it with them. The layer
+   is inset:0 on an unpadded plate, so its outline lands exactly where an outline
+   on the plate itself would. `outline` rather than `border` keeps the stroke
+   fully outside the box and leaves the bounds geometry untouched. */
+body.plated .plate::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--plate-bg);
+  outline: var(--ow) solid var(--outline-color);
+  opacity: var(--plate-opacity);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* lift the notation above the fill layer — the note flag is already absolute, so
+   it only needs the stacking order, not a position change */
+.viewport { position: relative; z-index: 1; }
+.note-flag { z-index: 1; }
+
+/* Positive bounds grow the rectangle away from the notation; negative bounds
+   pull it in tighter. Margins do both, which padding cannot. */
+body.plated .viewport { margin: var(--bt) var(--br) var(--bb) var(--bl); }
+
+/* Keep the notation clear of the note bubble parked in the bottom-right corner —
+   shrinking the clip box means scrolling notation clips before it reaches the icon
+   rather than sliding underneath it. Per block, since only the lines that actually
+   carry a note need the clearance. */
+.block.has-notes .viewport { margin-right: var(--note-gap); }
+body.plated .block.has-notes .viewport { margin-right: calc(var(--br) + var(--note-gap)); }
+
+/* ---------- line-number badge ---------- */
+
+/* Full-height strip down the left of the rectangle carrying the line number. */
+.linebadge {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: calc(var(--icon) * 1.9);
+  padding: 0 calc(var(--icon) * 0.36);
+  font-size: var(--badge-size);
+  line-height: 1;
+  color: var(--badge-color);
+}
+
+.linebadge[hidden] { display: none; }
+
+/* the fill is its own layer so the opacity control leaves the digit crisp */
+.linebadge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--badge-bg);
+  opacity: var(--badge-opacity);
+  z-index: -1;
+}
+
+/* ---------- header ---------- */
+
+/* Sits above the notation and inside the rectangle, and is deliberately outside
+   the track so the marquee slides the notation underneath it. */
+/* Three zones across the full width. The outer columns are equal, so whatever
+   lands in the middle one is centred on the row itself — not on the space left
+   over by its neighbours. `minmax(0, …)` lets a long title shrink and ellipsis
+   rather than forcing the row wider. */
+.header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: calc(var(--icon) * 0.3);
+  margin-bottom: var(--head-gap);
+  line-height: 1.15;
+}
+
+.header:empty { display: none; }
+
+/* Parts that share a zone sit side by side inside it, in title-then-damage order. */
+.hd-zone {
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--icon) * 0.35);
+  min-width: 0;
+}
+
+.hd-left { justify-self: start; }
+.hd-center { justify-self: center; }
+.hd-right { justify-self: end; }
+
+.hd-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--title-size);
+  color: var(--title-color);
+}
+
+.hd-damage {
+  white-space: nowrap;
+  font-size: var(--damage-size);
+  color: var(--damage-color);
+}
+
+/* ---------- the icons ---------- */
+
+.content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: var(--align);
+  gap: 2px 4px;
+}
+
+.seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 1px;
+  min-width: 0;
+}
+
+/* forced line break from \n — full width and no height, so it just ends the row */
+.brk { flex: 0 0 100%; width: 100%; height: 0; }
+
+.content img {
+  width: var(--icon);
+  height: var(--icon);
+  object-fit: contain;
+  display: block;
+  user-select: none;
+}
+
+.content img.sep { width: calc(var(--icon) * 0.72); }
+
+.content .txt {
+  font-size: var(--text-size);
+  color: var(--text-color);
+  line-height: 1;
+  padding: 0 0.18em;
+  white-space: pre;
+}
+
+.content .unknown {
+  color: #ff6b5e;
+  border-bottom: 2px dotted #ff6b5e;
+}
+
+/* ---------- note ---------- */
+
+/* The speech bubble sits inside the main rectangle at its bottom-right, directly
+   above the notes block it points at. Absolute so it never disturbs the notation. */
+.note-flag {
+  position: absolute;
+  right: calc(var(--icon) * 0.15);
+  bottom: calc(var(--icon) * 0.15);
+  width: calc(var(--icon) * 0.8);
+  height: calc(var(--icon) * 0.8);
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.note-flag[hidden] { display: none; }
+
+/* The note stays flush against the bottom of the rectangle above it. Spacing is
+   padding *inside* the note, so raising it grows the note's own box upward rather
+   than pushing the note away from the notation.
+
+   `isolation` keeps the -1 fill layer inside this element's own stacking context;
+   without it the layer slips behind an opaque ancestor and vanishes. */
+.notes {
+  align-self: flex-end;
+  justify-content: flex-end;
+  max-width: 100%;
+  position: relative;
+  isolation: isolate;
+  padding-top: var(--note-gap-y);
+  color: var(--note-color);
+}
+
+.notes:empty { display: none; }
+
+/* notes always hug the bottom-right, whatever the notation alignment is */
+.content.notes { justify-content: flex-end; }
+.content.notes .txt { font-size: var(--note-size); color: var(--note-color); }
+
+body.plated .notes {
+  padding: calc(var(--icon) * 0.16 + var(--note-gap-y))
+           calc(var(--icon) * 0.3)
+           calc(var(--icon) * 0.16);
+}
+
+/* fill on its own layer again, so opacity does not fade the notation inside it */
+body.plated .notes::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--note-bg);
+  opacity: var(--note-opacity);
+  z-index: -1;
+}
+
+/* ---------- marquee ---------- */
+
+/* The viewport is the inner box that clips. `max-content` on the track keeps the
+   notation at its full single-line width so it can be slid past the clip; the
+   slide itself is scripted (see setupMarquee). */
+body.scrolling .viewport { overflow: hidden; }
+
+body.scrolling .track {
+  display: flex;
+  width: max-content;
+}
+
+/* scoped to the track: the notes block sits outside it and keeps wrapping */
+body.scrolling .track .content { flex-wrap: nowrap; }
+body.scrolling .track .seg { flex-wrap: nowrap; }
+body.scrolling .track .brk { display: none; }

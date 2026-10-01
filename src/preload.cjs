@@ -1,0 +1,12 @@
+const { contextBridge, ipcRenderer } = require("electron");
+
+contextBridge.exposeInMainWorld("comboOverlay", {
+  getState: () => ipcRenderer.invoke("state:get"),
+  setState: (patch) => ipcRenderer.send("state:set", patch),
+  quit: () => ipcRenderer.send("app:quit"),
+  onState: (callback) => {
+    const handler = (_event, state) => callback(state);
+    ipcRenderer.on("state:update", handler);
+    return () => ipcRenderer.removeListener("state:update", handler);
+  },
+});

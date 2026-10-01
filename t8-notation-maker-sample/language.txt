@@ -1,0 +1,172 @@
+# Every piece of text the page can show.
+#
+# A line starting with "#" begins a language, named by the first word after it.
+# Every other line is "English text: translated text".
+#
+# The English side is the key, so it must be left exactly as written. To add a
+# language, copy the whole EN block, change the heading, and translate the right
+# hand side of each line. It will appear in the language row automatically.
+
+# EN (default)
+T8 Notation Maker: T8 Notation Maker
+Notation: Notation
+Display: Display
+Open display: Open display
+Display closed: Display closed
+Display live: Display live
+Transparency on: Transparency on
+Transparency off: Transparency off
+Position on the display: Position on the display
+Collapse: Collapse
+Expand: Expand
+Save image: Save image
+Batch save image: Batch save image
+Copy text: Copy text
+Save text: Save text
+Load text: Load text
+Clear: Clear
+Preferences: Preferences
+Background: Background
+Background on: Background on
+Background off: Background off
+Background size: Background size
+Colour: Colour
+Opacity: Opacity
+Outline: Outline
+Line number: Line number
+Line number on: Line number on
+Line number off: Line number off
+Drop shadow: Drop shadow
+Shadow on: Shadow on
+Shadow off: Shadow off
+Position: Position
+Top: Top
+Bottom: Bottom
+Left: Left
+Right: Right
+Center: Center
+Width: Width
+Scrolling: Scrolling
+Scrolling on: Scrolling on
+Scrolling off: Scrolling off
+Speed: Speed
+Text: Text
+Size: Size
+Alignment: Alignment
+Title: Title
+Title on: Title on
+Title off: Title off
+Damage: Damage
+Damage on: Damage on
+Damage off: Damage off
+Label: Label
+Header spacing: Header spacing
+Note: Note
+Notes on: Notes on
+Notes off: Notes off
+Note icon on: Note icon on
+Note icon off: Note icon off
+Text size: Text size
+Text colour: Text colour
+Block colour: Block colour
+Spacing: Spacing
+Directions: Directions
+Attacks: Attacks
+Properties: Properties
+Symbols: Symbols
+text: text
+linebreak: linebreak
+note: note
+inv. note: inv. note
+Clear the notation?: Clear the notation?
+This empties the text box, including every line. It cannot be undone.: This empties the text box, including every line. It cannot be undone.
+Cancel: Cancel
+Reset all preferences: Reset all preferences
+Reset every preference?: Reset every preference?
+Every setting in this panel goes back to its default. Your notation is not touched.: Every setting in this panel goes back to its default. Your notation is not touched.
+Reset: Reset
+Your converted notation appears here.: Your converted notation appears here.
+Combo name: Combo name
+Language: Language
+
+# JP
+T8 Notation Maker: T8 コマンド表記メーカー
+Notation: コマンド表記
+Display: 表示画面
+Open display: 表示画面を開く
+Display closed: 表示画面：停止中
+Display live: 表示画面：稼働中
+Transparency on: 背景透過：オン
+Transparency off: 背景透過：オフ
+Position on the display: 画面内の位置
+Collapse: 折りたたむ
+Expand: 展開する
+Save image: 画像を保存
+Batch save image: 一括で画像を保存
+Copy text: テキストをコピー
+Save text: テキストを保存
+Load text: テキストを読み込む
+Clear: 消去
+Preferences: 設定
+Background: 背景
+Background on: 背景：オン
+Background off: 背景：オフ
+Background size: 背景サイズ
+Colour: 色
+Opacity: 不透明度
+Outline: 枠線
+Line number: 行番号
+Line number on: 行番号：オン
+Line number off: 行番号：オフ
+Drop shadow: ドロップシャドウ
+Shadow on: 影：オン
+Shadow off: 影：オフ
+Position: 位置
+Top: 上
+Bottom: 下
+Left: 左
+Right: 右
+Center: 中央
+Width: 幅
+Scrolling: スクロール
+Scrolling on: スクロール：オン
+Scrolling off: スクロール：オフ
+Speed: 速度
+Text: 文字
+Size: サイズ
+Alignment: 配置
+Title: タイトル
+Title on: タイトル：オン
+Title off: タイトル：オフ
+Damage: ダメージ
+Damage on: ダメージ：オン
+Damage off: ダメージ：オフ
+Label: ラベル
+Header spacing: ヘッダー余白
+Note: メモ
+Notes on: メモ：オン
+Notes off: メモ：オフ
+Note icon on: メモアイコン：オン
+Note icon off: メモアイコン：オフ
+Text size: 文字サイズ
+Text colour: 文字色
+Block colour: ブロック色
+Spacing: 余白
+Directions: 方向
+Attacks: 攻撃
+Properties: 属性
+Symbols: 記号
+text: テキスト
+linebreak: 改行
+note: メモ
+inv. note: 非表示メモ
+Clear the notation?: コマンド表記を消去しますか？
+This empties the text box, including every line. It cannot be undone.: すべての行を含め、入力欄を空にします。元に戻せません。
+Cancel: キャンセル
+Reset all preferences: 設定をすべて初期化
+Reset every preference?: 設定をすべて初期化しますか？
+Every setting in this panel goes back to its default. Your notation is not touched.: このパネルの設定がすべて初期値に戻ります。コマンド表記はそのままです。
+Reset: 初期化
+Your converted notation appears here.: 変換されたコマンド表記がここに表示されます。
+Combo name: タイトル
+Language: 言語

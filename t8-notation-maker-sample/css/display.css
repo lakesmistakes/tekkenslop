@@ -1,0 +1,35 @@
+/* Page chrome for the display. The notation itself is styled by notation.css. */
+
+:root {
+  --icon: clamp(38px, 6.5vw, 88px);
+  --ink: #ffffff;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  background: #000;
+  color: var(--ink);
+  font-family: "Bebas Neue Pro", "Bebas Neue", Impact, "Arial Narrow", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+#stage {
+  min-height: 100dvh;
+  width: 100%;
+  padding: clamp(10px, 2.5vw, 28px);
+  display: flex;
+  /* justify-content / align-items come from the `p` URL parameter */
+}
+
+#hint {
+  font-size: clamp(13px, 3vw, 18px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #3a3a3a;
+}

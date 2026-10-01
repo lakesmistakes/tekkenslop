@@ -1,0 +1,799 @@
+/* Editor page chrome: layout, control panel, palette, dialogs.
+   The rendered notation itself is styled by notation.css. */
+
+:root {
+  /* style guide */
+  --bg: #15232f;
+  --bg-grad: linear-gradient(to top, #3d293d, #15232f);
+  --panel: #2a3945;
+  --accent: #800534;
+  --accent-lift: #d62860;
+
+  /* derived */
+  --line: #3c4d5d;
+  --ink: #eaf0f5;
+  --ink-dim: #8fa0af;
+
+  /* the preview renders smaller than the display page */
+  --icon: clamp(30px, 8.5vw, 46px);
+  --pad: clamp(24px, 5vw, 72px);
+  --radius: 0;
+
+  /* Every interactive control in the panel is this tall. Uniform heights are what
+     keep the captions above them on one line — mismatched heights pushed the
+     labels over sliders a few pixels higher than the rest. */
+  --ctl-h: 36px;
+
+  --plate-bg: var(--bg-grad);
+}
+
+* { box-sizing: border-box; }
+
+/* The gradient lives on <html> so it propagates to the canvas and covers the
+   full viewport however tall the page gets - on <body> it is clipped to the body
+   box and stops short at the bottom. */
+html {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--bg) var(--bg-grad) fixed;
+  color: var(--ink);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: none;
+  color: var(--ink);
+  font-family: "Bebas Neue Pro", "Bebas Neue", Impact, "Arial Narrow", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+.wrap {
+  width: 100%;
+  padding: var(--pad);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2vw, 18px);
+}
+
+/* ---------- output ---------- */
+
+/* no overflow clipping — the Display popout hangs below the head */
+.output-card {
+  background: var(--panel);
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+}
+
+.output-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-dim);
+  font-size: 17px;
+  letter-spacing: 0.06em;
+}
+
+.output-head .tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+
+/* ---------- display popout ----------
+   The display settings live under their own button rather than as a panel far
+   down the page, so the thing they control is right next to the preview. */
+
+.popwrap { position: relative; display: inline-flex; }
+
+/* Everything stacks centred, and the popout shrink-wraps its widest control —
+   so the two buttons end up matching without either being given a fixed width. */
+.popout {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 60;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
+}
+
+.popout[hidden] { display: none; }
+
+/* the transparency toggle is built into a .row, which would otherwise sit left */
+.popout .row { justify-content: center; }
+.popout .row .btn { width: 100%; }
+
+.popout .open-btn { width: 100%; padding: 0 14px; }
+
+/* Keeping the labels on one line is what sets the popout's width: it shrink-wraps
+   to the longest of them, and both buttons then stretch to match. No fixed width
+   to keep in step with the wording. */
+.popout .btn,
+.popout .open-btn { white-space: nowrap; }
+.popout .live { text-align: center; }
+
+.pop-sect {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- preferences ---------- */
+
+.prefs { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+
+.prefs-head { display: flex; align-items: center; gap: 8px; }
+
+/* the reset only exists while the drawer is open */
+#resetAllBtn { display: none; }
+.prefs.open #resetAllBtn { display: inline-flex; }
+
+/* Animating grid-template-rows from 0fr to 1fr slides the panel open without
+   needing to know its height in advance. */
+.prefs-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  width: 100%;
+  transition: grid-template-rows 0.25s ease;
+}
+
+.prefs.open .prefs-body { grid-template-rows: 1fr; }
+
+.prefs-inner { overflow: hidden; min-width: 0; }
+
+/* Once open, the clip has to come off or the colour popovers inside get cut at
+   the panel edge. The script adds this after the slide finishes. */
+.prefs.expanded .prefs-inner { overflow: visible; }
+
+.prefs.open .prefs-inner { padding-top: clamp(12px, 2vw, 18px); }
+
+/* one rendered block per line of the textbox */
+.output {
+  padding: clamp(10px, 2.2vw, 16px);
+  min-height: calc(var(--icon) + 24px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(10px, 2vw, 16px);
+  color: var(--ink);
+}
+
+/* the line this block belongs to is live on the display */
+.block.inactive { opacity: 0.45; }
+
+/* with several lines, clicking a block promotes it to the active one */
+body.multiline .block { cursor: pointer; }
+body.multiline .block.inactive:hover { opacity: 0.75; }
+
+/* collapsed: only the active line's block is shown */
+body.collapsed .block.inactive { display: none; }
+
+.output .empty {
+  color: #5c657a;
+  font-size: clamp(13px, 3.4vw, 16px);
+  letter-spacing: 0.06em;
+}
+/* ---------- notation input ---------- */
+
+.field { display: flex; align-items: stretch; gap: 10px; }
+
+.modes { display: flex; flex-direction: column; gap: 6px; }
+.mode-btn { min-width: 62px; }
+
+/* One number per textbox line, inside the input's own border so it reads as part
+   of the box rather than a separate control. */
+.gutter {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 10px 0;
+  border-right: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.22);
+  flex: 0 0 auto;
+}
+
+.gutter[hidden] { display: none; }
+
+.gutter button {
+  appearance: none;
+  border: none;
+  background: none;
+  color: var(--ink-dim);
+  cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: clamp(16px, 4vw, 18px);
+  line-height: 1.5;
+  padding: 0 10px;
+  text-align: right;
+  min-width: 42px;
+}
+
+.gutter button:hover { color: var(--ink); }
+
+.gutter button[aria-pressed="true"] {
+  color: #fff;
+  background: var(--accent);
+}
+
+/* The textarea is transparent and sits on top of a mirror layer that paints the
+   title / damage / note chips behind the matching characters. Both share the same
+   box metrics, so the two stay in register. */
+.input-wrap {
+  display: flex;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-width: 0;
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+
+/* the mirror layer and the textarea overlay each other inside this box */
+.input-stack { position: relative; flex: 1 1 auto; min-width: 0; }
+
+.input-wrap:focus-within {
+  border-color: var(--accent-lift);
+  box-shadow: 0 0 0 3px rgba(214, 40, 96, 0.22);
+}
+
+.hl, .input-wrap textarea {
+  padding: 10px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 400;
+  font-size: clamp(16px, 4vw, 18px);
+  line-height: 1.5;
+  letter-spacing: 0;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.hl {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: transparent;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Chips are drawn with background + spread only — no padding or border, which
+   would shift the glyphs out of alignment with the textarea above. */
+.hl .chip { border-radius: 0; }
+.hl .chip-title  { background: rgba(214, 40, 96, 0.30);  box-shadow: 0 0 0 2px rgba(214, 40, 96, 0.30); }
+.hl .chip-damage { background: rgba(255, 170, 40, 0.26); box-shadow: 0 0 0 2px rgba(255, 170, 40, 0.26); }
+.hl .chip-note   { background: rgba(90, 190, 255, 0.22); box-shadow: 0 0 0 2px rgba(90, 190, 255, 0.22); }
+/* invisible notes are never rendered, so their chip is deliberately colourless */
+.hl .chip-invnote { background: rgba(150, 165, 180, 0.20); box-shadow: 0 0 0 2px rgba(150, 165, 180, 0.20); }
+
+.input-wrap textarea {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-height: 104px;
+  resize: vertical;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+}
+
+.input-wrap textarea:focus { outline: none; }
+
+/* ---------- control panel ---------- */
+
+.panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: clamp(12px, 2vw, 18px);   /* matches .wrap, so cards read as the same tier as the outer sections */
+}
+
+/* Each group is its own card so the rows of controls read as distinct sections
+   rather than one undifferentiated wall of inputs. */
+.sect {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 14px 14px;
+}
+
+.sect.launch {
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.sect-title {
+  color: var(--ink);
+  font-size: 17px;
+  letter-spacing: 0.06em;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.sect.launch .live { text-align: center; }
+
+.row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; }
+
+/* toggles that belong together read as a column rather than a line */
+.row.stacked { flex-direction: column; align-items: stretch; }
+
+/* Two rows of three, laid out as a grid so equivalent controls stack in the same
+   column however wide their labels or toggles happen to be. */
+.row.aligned3 {
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
+  gap: 10px;
+  align-items: end;
+}
+
+/* A card can hold several groups side by side; a group is a vertical stack of
+   rows. `.side` splits a group off with a rule, for settings that belong to the
+   card but not to the block of controls next to them. */
+.sect-body { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 14px; }
+.grp { display: flex; flex-direction: column; gap: 8px; }
+
+.grp.boxed {
+  padding: 8px 10px 10px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.grp.side { padding-left: 14px; border-left: 1px solid var(--line); }
+
+.grp-title {
+  color: var(--ink-dim);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+
+/* one labelled control: caption on top, input + optional reset beneath */
+.fld { display: flex; flex-direction: column; gap: 4px; }
+
+.fld-cap {
+  color: var(--ink-dim);
+  font-size: 14px;
+  letter-spacing: 0.03em;
+}
+
+/* numeric captions double as scrub handles — drag sideways to change the value */
+.fld-cap.scrub {
+  cursor: ew-resize;
+  user-select: none;
+  touch-action: none;
+}
+
+/* these captions also reset their setting on double-click, in place of a button */
+.fld-cap.resettable { user-select: none; }
+.fld-cap.scrub:hover,
+.fld-cap.resettable:hover { color: var(--ink); }
+
+.fld-in { position: relative; display: flex; align-items: center; gap: 4px; }
+
+.fld input[type="number"] {
+  width: 76px;
+  height: var(--ctl-h);
+  padding: 0 9px;
+  border-radius: 0;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: 0;
+}
+
+.fld input:focus {
+  outline: none;
+  border-color: var(--accent-lift);
+  box-shadow: 0 0 0 3px rgba(214, 40, 96, 0.22);
+}
+
+.fld input:disabled { opacity: 0.4; }
+
+/* ---------- colour picker ----------
+   Built from plain elements rather than <input type="color">. OBS's embedded
+   Chromium has no native colour-chooser dialog, so the native control simply does
+   nothing when clicked in Interact mode. */
+
+.swatch {
+  width: 34px;
+  height: var(--ctl-h);
+  padding: 0;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.swatch:hover { border-color: var(--accent-lift); }
+.swatch:disabled { opacity: 0.4; cursor: default; }
+.swatch:disabled:hover { border-color: var(--line); }
+
+.cp {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 50;
+  width: 190px;
+  padding: 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.cp[hidden] { display: none; }
+
+.cp-sv {
+  position: relative;
+  height: 112px;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.cp-hue {
+  position: relative;
+  height: 14px;
+  cursor: ew-resize;
+  touch-action: none;
+  background: linear-gradient(to right,
+    #f00 0%, #ff0 16.66%, #0f0 33.33%, #0ff 50%, #00f 66.66%, #f0f 83.33%, #f00 100%);
+}
+
+.cp-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border: 2px solid #fff;
+  outline: 1px solid rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+}
+
+.cp-hue-dot {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 4px;
+  margin-left: -2px;
+  border: 2px solid #fff;
+  outline: 1px solid rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+}
+
+.cp-hex {
+  width: 100%;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 400;
+  font-size: 14px;
+  letter-spacing: 0;
+  text-transform: lowercase;
+}
+
+.cp-hex:focus {
+  outline: none;
+  border-color: var(--accent-lift);
+}
+
+.cp-ok { width: 100%; }
+
+/* reset button — assets/reset.svg is a single black path, so it is used as a
+   mask and tinted with background-color rather than shown as an <img> */
+.seg-btn { height: var(--ctl-h); padding: 0 12px; font-size: 15px; }
+
+.fld input[type="range"] {
+  width: 108px;
+  height: var(--ctl-h);
+  padding: 0;
+  margin: 0;          /* browsers give range inputs a default margin, which made
+                         its row 4px taller and pushed the caption above it up */
+  background: none;
+  border: none;
+  cursor: pointer;
+  accent-color: var(--accent-lift);
+}
+
+.fld input.text-in {
+  width: 116px;
+  height: var(--ctl-h);
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: 0;
+}
+
+.fld input.readout {
+  width: 54px;
+  height: var(--ctl-h);
+  padding: 0 6px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 400;
+  font-size: 14px;
+  letter-spacing: 0;
+}
+
+.reset {
+  flex: 0 0 auto;
+  width: var(--ctl-h);
+  height: var(--ctl-h);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--bg);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reset::before {
+  content: "";
+  width: 15px;
+  height: 15px;
+  background-color: var(--ink-dim);
+  -webkit-mask: url("../assets/reset.svg") center / contain no-repeat;
+  mask: url("../assets/reset.svg") center / contain no-repeat;
+}
+
+.reset:hover { border-color: var(--accent-lift); }
+.reset:hover::before { background-color: var(--ink); }
+.reset:disabled { opacity: 0.4; cursor: default; }
+.reset:disabled:hover { border-color: var(--line); }
+.reset:disabled:hover::before { background-color: var(--ink-dim); }
+
+/* ---------- position grid ---------- */
+
+.posgrid {
+  display: grid;
+  grid-template-columns: repeat(3, 30px);
+  grid-template-rows: repeat(3, 30px);
+  gap: 5px;
+}
+
+.pos {
+  border: 1px solid var(--line);
+  background: var(--bg);
+  border-radius: 0;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* A marker parked in the corner the notation will sit in. */
+.pos::after {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 0;
+  background: #4d566d;
+}
+
+.pos:hover { border-color: var(--accent-lift); }
+.pos[aria-pressed="true"] { border-color: var(--accent-lift); background: rgba(128, 5, 52, 0.35); }
+.pos[aria-pressed="true"]::after { background: var(--accent-lift); }
+
+/* ---------- launch ---------- */
+
+.live { color: var(--ink-dim); font-size: 15px; letter-spacing: 0.04em; }
+.live.on { color: var(--accent-lift); }
+
+.open-btn {
+  appearance: none;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 0.04em;
+  padding: 0 22px;
+  height: var(--ctl-h);
+  border-radius: 0;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.open-btn:hover { background: #a00742; border-color: #a00742; }
+
+/* ---------- palette ---------- */
+
+.palette {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: clamp(10px, 2.4vw, 14px);
+}
+
+.group-title {
+  color: var(--ink-dim);
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  margin-bottom: 7px;
+}
+
+.keys { display: flex; flex-wrap: wrap; gap: 7px; }
+.keys + .keys { margin-top: 7px; }
+
+.key {
+  --key-size: clamp(44px, 11.5vw, 58px);
+  width: var(--key-size);
+  padding: 5px 2px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  cursor: pointer;
+  color: var(--ink-dim);
+  font-family: inherit;
+  font-weight: 700;
+  transition: transform 0.08s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.key img {
+  width: calc(var(--key-size) - 18px);
+  height: calc(var(--key-size) - 18px);
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* the invisible-note key reuses the note art, drained of colour to say so */
+.key img.gray { filter: grayscale(1) brightness(1.1); }
+
+.key .cap {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--ink-dim);
+  pointer-events: none;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.key:hover { border-color: var(--accent-lift); box-shadow: 0 0 0 2px rgba(128, 5, 52, 0.4); }
+.key:active { transform: translateY(1px) scale(0.97); }
+
+/* A glyph key stands in for an icon key: the mark takes the same space the image
+   would, so both kinds line up and both carry a caption. */
+.key.glyph { color: var(--ink); }
+
+.key .mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--key-size) - 18px);
+  height: calc(var(--key-size) - 18px);
+  font-size: 20px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* ---------- language ---------- */
+
+.langbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lang-label {
+  color: var(--ink-dim);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+}
+
+.lang-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.lang-btn { min-width: 56px; }
+
+/* ---------- confirm dialog ---------- */
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(6, 12, 18, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.scrim[hidden] { display: none; }
+
+.dialog {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: 20px;
+  max-width: 380px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.dialog h2 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: 0.04em; }
+.dialog p { margin: 0; color: var(--ink-dim); font-size: 15px; line-height: 1.45; }
+.dialog .row { justify-content: flex-end; gap: 8px; }
+
+.btn-danger { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-danger:hover { background: #a00742; border-color: #a00742; color: #fff; }
+
+/* ---------- buttons ---------- */
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  height: var(--ctl-h);
+  padding: 0 14px;
+  border-radius: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:hover { border-color: var(--accent-lift); color: #fff; }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.btn:disabled:hover { border-color: var(--line); color: var(--ink); }
+
+.btn[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+@media (max-width: 560px) {
+  .keys { gap: 6px; }
+  .sect.launch { margin-left: 0; width: 100%; align-items: stretch; }
+  .open-btn { width: 100%; }
+}
