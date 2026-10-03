@@ -29,7 +29,7 @@ test("the overlay never captures clicks at startup, through IPC, or after visibi
   }
 
   const electron = {
-    app: { whenReady: () => Promise.resolve(), on() {}, quit() {} },
+    app: { whenReady: () => Promise.resolve(), on() {}, quit() {}, getPath: () => "unused-in-this-test" },
     BrowserWindow,
     ipcMain: {
       handle: (channel, handler) => handlers.set(channel, handler),
@@ -41,11 +41,12 @@ test("the overlay never captures clicks at startup, through IPC, or after visibi
   const mainPath = path.join(__dirname, "../src/main.cjs");
   vm.runInNewContext(fs.readFileSync(mainPath, "utf8"), {
     __dirname: path.dirname(mainPath),
-    process: { platform: "win32" },
+    process: { platform: "win32", env: {} },
     require: (name) => {
       if (name === "electron") return electron;
       if (name === "path") return path;
       if (name === "./assistant-ipc.cjs") return { registerAssistantIpc };
+      if (name === "./assistant-service.cjs") return { createAssistantService: () => ({ getStatus: () => ({}) }) };
       throw new Error(`Unexpected module: ${name}`);
     },
   });

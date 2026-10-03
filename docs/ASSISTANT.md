@@ -55,10 +55,10 @@ payloads are rejected, and extra fields are discarded. HUD text uses
   to `assistant:event` and returns an unsubscribe function.
 - `src/assistant-hud.js`: simulation fixtures and temporary HUD rendering.
 
-A future Python adapter can decode JSON and call the publisher returned by the
-registration in `src/main.cjs`. Python cannot directly use Electron renderer
-IPC; its process/socket/stdout transport still needs to be wired to that
-publisher. No CV, Python process, socket server, or game capture is implemented.
+Phase 2 adds a Python capture sidecar and a loopback JSON transport that calls
+the publisher returned by registration in `src/main.cjs`. Setup, the Python
+test-event command, status controls, and transport details are documented in
+[Python Sidecar (Phase 2)](./PYTHON_SIDECAR.md). Move recognition is not implemented.
 Events are transient, are not persisted or replayed, and are rejected while the
 overlay is unavailable or loading. Hidden-overlay cues still expire.
 

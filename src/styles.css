@@ -200,6 +200,26 @@ textarea:focus {
   margin: 12px 0;
 }
 
+.assistant-actions {
+  margin: 12px 0;
+}
+
+.assistant-process-status {
+  color: #cbd5e5;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+#assistant-process-error {
+  color: #ffbd69;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
 .assistant-test-buttons button {
   min-height: 42px;
   padding: 10px 14px;

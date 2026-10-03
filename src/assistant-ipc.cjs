@@ -1,7 +1,7 @@
 const { normalizeAssistantEvent } = require("./assistant-events.cjs");
 
 function registerAssistantIpc({ ipcMain, getControlWindow, getOverlayWindow }) {
-  // A future Python transport should decode JSON and call this same entrypoint.
+  // Renderer simulations and the Python transport share this validated publisher.
   function publishAssistantEvent(input) {
     const event = normalizeAssistantEvent(input);
     if (!event) return { ok: false, error: "Invalid assistant event." };

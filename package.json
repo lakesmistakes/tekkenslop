@@ -6,6 +6,7 @@
   "scripts": {
     "start": "electron .",
     "test": "node --test test/*.test.cjs",
+    "assistant:test": "python assistant/main.py test-events",
     "build": "electron-builder --win portable",
     "build:installer": "electron-builder --win nsis"
   },
@@ -24,6 +25,13 @@
   "build": {
     "appId": "com.local.tekken8combooverlay",
     "productName": "Tekken 8 Combo Overlay",
+    "extraResources": [
+      {
+        "from": "assistant",
+        "to": "assistant",
+        "filter": ["main.py", "capture.py", "transport.py", "requirements.txt"]
+      }
+    ],
     "files": [
       "index.html",
       "src/**/*",

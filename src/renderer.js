@@ -1,8 +1,10 @@
 import { AssistantHud, assistantDemos } from "./assistant-hud.js";
+import { createAssistantControls } from "./assistant-controls.js";
 
 const params = new URLSearchParams(window.location.search);
 const mode = params.get("window") === "overlay" ? "overlay" : "control";
 const assistantHud = mode === "overlay" ? new AssistantHud() : null;
+const assistantControls = mode === "control" ? createAssistantControls(window.comboOverlay) : null;
 
 const directions = {
   ub: "↖",
@@ -242,6 +244,20 @@ function renderControl(state) {
           <div class="overlay-preview">${renderNotation(state.notation)}</div>
         </div>
 
+        <section class="assistant-test-panel" aria-labelledby="assistant-title">
+          <h2 id="assistant-title">Training assistant</h2>
+          <p class="pane-note">Local screen capture only. Move recognition is not enabled.</p>
+          <div class="toolbar assistant-actions">
+            <button id="assistant-start" disabled>Start Assistant</button>
+            <button id="assistant-stop" disabled>Stop Assistant</button>
+          </div>
+          <div class="assistant-process-status" role="status" aria-live="polite">
+            <p>Python: <span id="assistant-python-status"></span></p>
+            <p>Capture: <span id="assistant-capture-status"></span></p>
+            <p id="assistant-process-error"></p>
+          </div>
+        </section>
+
         <section class="assistant-test-panel" aria-labelledby="assistant-test-title">
           <h2 id="assistant-test-title">Developer assistant test</h2>
           <p class="pane-note">Simulate a training cue on the overlay. Each lasts 4 seconds; a new cue replaces the previous one.</p>
@@ -357,6 +373,7 @@ function renderOverlay(state) {
 }
 
 function bindControlEvents() {
+  assistantControls.bind();
   document.querySelectorAll("[data-assistant-demo]").forEach((button) => {
     button.addEventListener("click", async () => {
       const status = document.getElementById("assistant-test-status");

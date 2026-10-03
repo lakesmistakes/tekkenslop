@@ -1,11 +1,14 @@
 const { app, BrowserWindow, globalShortcut, ipcMain, screen } = require("electron");
 const path = require("path");
 const { registerAssistantIpc } = require("./assistant-ipc.cjs");
+const { createAssistantService } = require("./assistant-service.cjs");
 
 let controlWindow;
 let overlayWindow;
+let assistantService;
+let closing = false;
 
-registerAssistantIpc({
+const publishAssistantEvent = registerAssistantIpc({
   ipcMain,
   getControlWindow: () => controlWindow,
   getOverlayWindow: () => overlayWindow,
@@ -101,6 +104,15 @@ function broadcastState() {
 }
 
 app.whenReady().then(() => {
+  assistantService = createAssistantService({
+    scriptPath: path.join(app.isPackaged ? process.resourcesPath : path.join(__dirname, ".."), "assistant", "main.py"),
+    connectionPath: process.env.TEKKEN_ASSISTANT_CONNECTION || path.join(process.env.LOCALAPPDATA || app.getPath("userData"), "Tekken8ComboOverlay", "assistant-connection.json"),
+    pythonPath: process.env.TEKKEN_ASSISTANT_PYTHON,
+    publishAssistantEvent,
+    onStatus: (status) => {
+      if (controlWindow && !controlWindow.isDestroyed()) controlWindow.webContents.send("assistant:status", status);
+    },
+  });
   createControlWindow();
   createOverlayWindow();
   globalShortcut.register("CommandOrControl+Shift+F12", () => {
@@ -117,6 +129,13 @@ app.whenReady().then(() => {
   });
 });
 
+app.on("before-quit", (event) => {
+  if (!assistantService || closing) return;
+  event.preventDefault();
+  closing = true;
+  assistantService.dispose().catch((error) => console.error("Assistant cleanup:", error.message)).finally(() => app.quit());
+});
+
 app.on("will-quit", () => {
   globalShortcut.unregisterAll();
 });
@@ -126,6 +145,19 @@ app.on("window-all-closed", () => {
 });
 
 ipcMain.handle("state:get", () => overlayState);
+
+for (const [channel, action] of [
+  ["assistant:status:get", () => assistantService.getStatus()],
+  ["assistant:start", () => assistantService.start()],
+  ["assistant:stop", () => assistantService.stop()],
+]) {
+  ipcMain.handle(channel, (event) => {
+    if (!controlWindow || controlWindow.isDestroyed() || event.sender !== controlWindow.webContents) {
+      throw new Error("Assistant controls are only available in the editor.");
+    }
+    return action();
+  });
+}
 
 ipcMain.on("state:set", (_event, patch) => {
   Object.assign(overlayState, patch, { clickThrough: true });

@@ -12,6 +12,7 @@ Build a local Windows executable that shows a Tekken 8 style combo overlay while
 - Regular movement and HOLD movement palettes visible at the same time.
 - Property tokens for Tornado, Heat Burst, Heat Dash, Heat Engager, Wall Break, Wall Blast, Floor Break, Balcony Break, Dash, and Sprint.
 - Temporary punish, matchup tip, and throw break HUD cues, driven by validated assistant events and a developer simulation panel. See [Training Assistant Foundation](./ASSISTANT.md).
+- Python sidecar with local DXcam/OpenCV capture, authenticated loopback event transport, and Start/Stop/status controls. Capture has no move recognition yet. See [Python Sidecar (Phase 2)](./PYTHON_SIDECAR.md).
 
 ## Overlay Limitation
 
